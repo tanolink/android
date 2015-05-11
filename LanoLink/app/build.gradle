@@ -1,0 +1,68 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 22
+    buildToolsVersion "22.0.1"
+
+    defaultConfig {
+        applicationId "com.lanolink.zouni"
+        minSdkVersion 9
+        targetSdkVersion 22
+        versionCode 1
+        versionName "1.0.0"
+    }
+
+    // 忽略编译 lint 报错，必须加上
+    lintOptions {
+        abortOnError false;
+    }
+
+    signingConfigs {
+        release {
+            storeFile file("LanoLink.keyStore")
+            storePassword "zouni2015"
+            keyAlias "lanolink"
+            keyPassword "zouni2015"
+        }
+    }
+
+    productFlavors {
+
+        '1' {}
+
+        productFlavors.all { flavor ->
+            flavor.manifestPlaceholders = [UMENG_CHANNEL_VALUE: name]
+        }
+
+    }
+
+    buildTypes {
+        release {
+            signingConfig signingConfigs.release
+            // 是否进行混淆
+            minifyEnabled false
+            // 混淆文件的位置
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+
+            // 编译自定义配置
+            applicationVariants.all { variant ->
+                variant.outputs.each { output ->
+                    def date = new Date();
+                    def formattedDate = date.format('yyyyMMdd')
+                    def outputFile = output.outputFile
+                    if (outputFile != null && outputFile.name.endsWith('.apk')) {
+                        output.outputFile = new File(outputFile.parent,
+                                outputFile.name.replace("-release", "").replace("app-", "AnyLoan_" + defaultConfig.versionName + "_" + formattedDate + "_")
+                        )
+                    }
+                }
+            }
+
+        }
+    }
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile 'com.android.support:appcompat-v7:22.1.1'
+}
